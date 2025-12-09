@@ -1,5 +1,4 @@
 # CoIF
-code of "Covariance-Inverse Fusion: Towards Comprehensive Proxies for Zero-Shot Neural Architecture Search"
 CoIF is a method for fusing multiple zero-cost proxies to achieve better correlation with the true performance metric in Neural Architecture Search (NAS).
 
 ## Installation

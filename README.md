@@ -41,7 +41,13 @@ print(f"Fused correlation: {correlation:.4f}")
 weights = coif.get_weights()
 ```
 
+## Example
 
+See `example.py` for a complete working example.
+
+```bash
+python example.py
+```
 ## API Reference
 
 ### `CoIF.fit(proxy_values, target_values, sample_indices=None)`
@@ -83,13 +89,7 @@ coif.fit(proxy_values, target_values, sample_indices=sample_indices)
 fused = coif.transform(proxy_values)
 ```
 
-## Example
 
-See `example.py` for a complete working example.
-
-```bash
-python example.py
-```
 
 ## Citation
 

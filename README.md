@@ -41,24 +41,6 @@ print(f"Fused correlation: {correlation:.4f}")
 weights = coif.get_weights()
 ```
 
-## Method
-
-CoIF computes optimal weights using a closed-form solution:
-
-**Closed-form solution:** `w = Σ^(-1) @ ρ`
-
-where:
-- `ρ` is the Spearman correlation vector between each proxy and the target
-- `Σ` is the covariance matrix between proxies
-
-The weights are then normalized: `w = w / sum(|w|)`
-
-## Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `use_rank` | bool | True | Apply rank transformation to proxy values |
-| `normalize` | bool | False | Normalize values to [0, 1] (only if use_rank=False) |
 
 ## API Reference
 
@@ -100,22 +82,6 @@ coif.fit(proxy_values, target_values, sample_indices=sample_indices)
 # Evaluate on all architectures
 fused = coif.transform(proxy_values)
 ```
-
-## Supported Zero-Cost Proxies
-
-CoIF can fuse any zero-cost proxies, including:
-
-- **Synflow** - Synaptic Flow
-- **ZiCo** - Zero-cost proxy based on gradient
-- **Zen** - Zen-NAS score
-- **GradNorm** - Gradient norm
-- **SNIP** - Single-shot Network Pruning
-- **GraSP** - Gradient Signal Preservation
-- **Fisher** - Fisher information
-- **JacobCov** - Jacobian covariance
-- **NASWOT** - Neural Architecture Search Without Training
-- **FLOPs** - Floating point operations
-- **Params** - Number of parameters
 
 ## Example
 

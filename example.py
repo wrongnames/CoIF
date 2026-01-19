@@ -28,6 +28,36 @@ def load_data(data_dir: str, dataset: str = 'cifar10'):
     return acc, proxy_dict
 
 
+def generate_random_proxies(target: np.ndarray, n_proxies: int, 
+                            noise_scale_range: tuple = (0.5, 3.0),
+                            seed: int = None) -> np.ndarray:
+    """
+    Generate n random proxies, each proxy is target plus different levels of noise.
+    
+    Args:
+        target: Ground truth target values (n_samples,)
+        n_proxies: Number of proxies to generate
+        noise_scale_range: Range of noise scale
+        seed: Random seed
+    
+    Returns:
+        proxy_values: (n_proxies, n_samples)
+    """
+    if seed is not None:
+        np.random.seed(seed)
+    
+    n_samples = len(target)
+    proxy_values = []
+    
+    for i in range(n_proxies):
+        noise_scale = np.random.uniform(*noise_scale_range)
+        noise = np.random.randn(n_samples) * noise_scale * np.std(target)
+        proxy = target + noise
+        proxy_values.append(proxy)
+    
+    return np.array(proxy_values)
+
+
 def main():
     # Example with synthetic data
     print("=" * 60)
@@ -40,14 +70,13 @@ def main():
     
     # Generate synthetic target (e.g., accuracy)
     target = np.random.randn(n_samples)
+    # Normalize to [0, 100] range (similar to accuracy distribution)
+    target = (target - target.min()) / (target.max() - target.min()) * 100
     
-    # Generate synthetic proxies with different correlations to target
-    proxy_values = []
-    for i in range(n_proxies):
-        noise = np.random.randn(n_samples) * (1 + min(0.3*i, 5) * 0.3)
-        proxy = target + noise
-        proxy_values.append(proxy)
-    proxy_values = np.array(proxy_values)
+    # Generate synthetic proxies with random noise levels
+    proxy_values = generate_random_proxies(target, n_proxies, 
+                                           noise_scale_range=(0.5, 5.0),
+                                           seed=42)
     
     # Print individual proxy correlations
     print("\nIndividual proxy correlations with target:")

@@ -1,0 +1,104 @@
+"""
+Example usage of CoIF for fusing zero-cost proxies.
+"""
+
+import numpy as np
+import pickle
+import os
+from scipy.stats import spearmanr
+from coif import CoIF
+
+
+def generate_random_proxies(target: np.ndarray, n_proxies: int, 
+                            noise_scale_range: tuple = (0.5, 3.0),
+                            seed: int = None) -> np.ndarray:
+    """
+    Generate n random proxies, each proxy is target plus different levels of noise.
+    
+    Args:
+        target: Ground truth target values (n_samples,)
+        n_proxies: Number of proxies to generate
+        noise_scale_range: Range of noise scale
+        seed: Random seed
+    
+    Returns:
+        proxy_values: (n_proxies, n_samples)
+    """
+    if seed is not None:
+        np.random.seed(seed)
+    
+    n_samples = len(target)
+    proxy_values = []
+    
+    for i in range(n_proxies):
+        noise_scale = np.random.uniform(*noise_scale_range)
+        noise = np.random.randn(n_samples) * noise_scale * np.std(target)
+        proxy = target + noise
+        proxy_values.append(proxy)
+    
+    return np.array(proxy_values)
+
+
+def main():
+    # Example with synthetic data
+    print("=" * 60)
+    print("CoIF Example with Synthetic Data")
+    print("=" * 60)
+    
+    np.random.seed(42)
+    n_samples = 10000
+    n_proxies = 10
+    
+    # Generate synthetic target (e.g., accuracy)
+    target = np.random.randn(n_samples)
+    # Normalize to [0, 100] range (similar to accuracy distribution)
+    target = (target - target.min()) / (target.max() - target.min()) * 100
+    
+    # Generate synthetic proxies with random noise levels
+    proxy_values = generate_random_proxies(target, n_proxies, 
+                                           noise_scale_range=(0.5, 5.0),
+                                           seed=42)
+    
+    # Print individual proxy correlations
+    print("\nIndividual proxy correlations with target:")
+    for i in range(n_proxies):
+        corr, _ = spearmanr(proxy_values[i], target)
+        print(f"  Proxy {i+1}: {corr:.4f}")
+    
+    # Use CoIF to fuse proxies
+    print("\n" + "-" * 40)
+    print("Fitting CoIF model...")
+    
+    coif = CoIF(use_rank=True)
+    combined = coif.fit_transform(proxy_values, target)
+    
+    result, _ = spearmanr(combined, target)
+    print(f"\nCoIF result:")
+    print(f"  Fused correlation: {result:.4f}")
+    print(f"  Weights (normalized): {coif.get_weights()}")
+    print(f"  Weights sum: {np.sum(coif.get_weights()):.4f}")
+    
+    
+    # Subsampling example
+    print("\n" + "-" * 40)
+    print("Subsampling example (fit on 20% data, evaluate on all):")
+    
+    sample_size = int(n_samples * 0.2)
+    sample_indices = np.random.choice(n_samples, sample_size, replace=False)
+    
+    coif_sub = CoIF(use_rank=True)
+    coif_sub.fit(proxy_values, target, sample_indices=sample_indices)
+    
+    # Evaluate on all data
+    eval_corr = coif_sub.evaluate(proxy_values, target)
+    print(f" Test Correlation: {eval_corr:.4f}")
+    
+    print("\n" + "=" * 60)
+    print("Example completed!")
+    print("=" * 60)
+
+
+if __name__ == '__main__':
+    main()
+
+
